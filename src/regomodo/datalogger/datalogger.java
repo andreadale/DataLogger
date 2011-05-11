@@ -70,21 +70,21 @@ public class datalogger extends Activity {
     		if (appState == STATE.WAITING){
     			appState = STATE.LOCKED;
     			status.setText("LOCKED");
-    		}    		
- 	   	}
-		public void onProviderDisabled(String arg0) {}
-		public void onProviderEnabled(String provider) {}
-		public void onStatusChanged(String provider, int status, Bundle extras) {}
+    		}    	
+    	}
+        public void onProviderDisabled(String arg0) {}
+        public void onProviderEnabled(String provider) {}
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
     };
     
     SensorEventListener sensorListener = new SensorEventListener() {
-		@Override
-		public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 		
-		@Override
-		public void onSensorChanged(SensorEvent event) {
-			sense = event;			
-		}    	
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            sense = event;			
+        }    	
     };
     
     public void myClickHandler(View view)
