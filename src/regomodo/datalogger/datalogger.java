@@ -181,14 +181,6 @@ public class datalogger extends Activity {
     private Runnable mTimer = new Runnable() {
 	   public void run() {
 		   Long now = SystemClock.uptimeMillis(); // needed for timer
-//		   if (loc == null){
-//			   	// not recieved a lock
-//			   	status.setText("NO LOCK");
-//		   } else {		   
-//			   	// Do stuff here
-//			   	write_data();
-//			   	status.setText("RUNNING");
-//		   }
 		   write_data();
 		   mHandler.postAtTime(this, now+1000);
 	   }    
