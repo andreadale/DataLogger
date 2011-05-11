@@ -106,6 +106,7 @@ public class datalogger extends Activity {
                     try {
                         csv = new FileWriter(fname);
                     } catch(Exception e) {
+                        status.setText(e.getLocalizedMessage());
                         break;
                     }
                     start_timer();
@@ -117,12 +118,12 @@ public class datalogger extends Activity {
                     try {
                         csv.close();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        status.setText(e.getLocalizedMessage());
                     }
                     mSensorManager.unregisterListener(sensorListener);
                     status.setText("WAITING");
-                    appState = STATE.WAITING; 
+                    appState = STATE.WAITING;
+                    break;
                 default:
                     break;
             }
@@ -136,8 +137,7 @@ public class datalogger extends Activity {
                 default:
                     status.setText("?");
                     break;
-            }
-            
+            }            
         }
     }
     
@@ -174,16 +174,16 @@ public class datalogger extends Activity {
                 csv.write(txt);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                status.setText(e.getLocalizedMessage());
             }
         }
     }
     
     private Runnable mTimer = new Runnable() {
-    public void run() {
-        Long now = SystemClock.uptimeMillis(); // needed for timer
-        write_data();
-        mHandler.postAtTime(this, now+1000);
-    }    
+        public void run() {
+            Long now = SystemClock.uptimeMillis(); // needed for timer
+            write_data();
+            mHandler.postAtTime(this, now+1000);
+        }    
     };
 }
