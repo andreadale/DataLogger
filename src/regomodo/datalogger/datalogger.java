@@ -22,16 +22,18 @@ import android.view.View;
 
 
 public class datalogger extends Activity {
-	LocationManager lm;
-	Location loc;
-	Long drift, start_time;
-	Handler mHandler = new Handler();
-	TextView status;
-	FileWriter csv;
-	STATE appState;
-	SensorManager mSensorManager;
-	Sensor mAccelerometer;
-	SensorEvent sense;
+    
+    private LocationManager lm;
+    private Location loc;
+    private Long drift;
+    private Handler mHandler = new Handler();
+    private TextView status;
+    private FileWriter csv;
+    private STATE appState;
+    private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
+    private SensorEvent sense;
+    
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,32 +48,32 @@ public class datalogger extends Activity {
     }
     
     public enum STATE{
-    	ERROR, LOCKED, RUNNING, WAITING
+        ERROR, LOCKED, RUNNING, WAITING
     }
     
     /*
-     * See if GPS is turned on
-     */
+    * See if GPS is turned on
+    */
     private void request_updates() {
         if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-        	appState = STATE.WAITING;
-        	status.setText("READY");
+            appState = STATE.WAITING;
+            status.setText("READY");
             
         } else {
-        	appState = STATE.ERROR;
-        	status.setText("NO GPS");
+            appState = STATE.ERROR;
+            status.setText("NO GPS");
         }       
     }
     
     LocationListener locationListener = new LocationListener() {
-    	public void onLocationChanged(Location location) {
-    		loc = location;
-    		drift = System.currentTimeMillis() - loc.getTime();
-    		if (appState == STATE.WAITING){
-    			appState = STATE.LOCKED;
-    			status.setText("LOCKED");
-    		}    	
-    	}
+        public void onLocationChanged(Location location) {
+            loc = location;
+            drift = System.currentTimeMillis() - loc.getTime();
+            if (appState == STATE.WAITING){
+                appState = STATE.LOCKED;
+                status.setText("LOCKED");
+            }    	
+        }
         public void onProviderDisabled(String arg0) {}
         public void onProviderEnabled(String provider) {}
         public void onStatusChanged(String provider, int status, Bundle extras) {}
@@ -80,7 +82,7 @@ public class datalogger extends Activity {
     SensorEventListener sensorListener = new SensorEventListener() {
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-		
+        
         @Override
         public void onSensorChanged(SensorEvent event) {
             sense = event;			
@@ -89,100 +91,99 @@ public class datalogger extends Activity {
     
     public void myClickHandler(View view)
     {
-    	if (view.getId() == R.id.button){
-	    	switch (appState){
-	    		case ERROR:
-	    			request_updates();
-	    			break;
-	    		case WAITING:
-	    			status.setText("NO LOCK");
-	    		case LOCKED:
-	    			//Start recording	    			
-	    			mSensorManager.registerListener(sensorListener, mAccelerometer,
-	    								SensorManager.SENSOR_DELAY_GAME);
-	    			File fname = new File(getExternalFilesDir(null),"test.csv");
-	    			try {
-	    				csv = new FileWriter(fname);
-	    			} catch(Exception e) {
-	    				break;
-	    			}
-	    			start_timer();
-	    			appState = STATE.RUNNING;
-	    			status.setText("RUNNING");
-	    			break;
-	    		case RUNNING:    			
-	    			stop_timer();
-	    			try {
-	    				csv.close();
-	    			} catch (IOException e) {
-	    				// TODO Auto-generated catch block
-	    				e.printStackTrace();
-	    			}
-	    			mSensorManager.unregisterListener(sensorListener);
-	    			status.setText("WAITING");
-	    			appState = STATE.WAITING; 
-    			default:
-    				break;
-	    	}
-    	} else if (view.getId() == R.id.lock) {
-    		switch (appState){
-    			case WAITING:
-    				lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,0, 0,
-    									locationListener);
-    				status.setText("GETTING LOCK");
-    				break;
-				default:
-					status.setText("?");
-					break;
-    		}
-    		
-    	}
+        if (view.getId() == R.id.button){
+            switch (appState){
+                case ERROR:
+                    request_updates();
+                    break;
+                case WAITING:
+                    status.setText("NO LOCK");
+                case LOCKED:
+                    //Start recording	    			
+                    mSensorManager.registerListener(sensorListener, mAccelerometer,
+                                        SensorManager.SENSOR_DELAY_GAME);
+                    File fname = new File(getExternalFilesDir(null),"test.csv");
+                    try {
+                        csv = new FileWriter(fname);
+                    } catch(Exception e) {
+                        break;
+                    }
+                    start_timer();
+                    appState = STATE.RUNNING;
+                    status.setText("RUNNING");
+                    break;
+                case RUNNING:    			
+                    stop_timer();
+                    try {
+                        csv.close();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    mSensorManager.unregisterListener(sensorListener);
+                    status.setText("WAITING");
+                    appState = STATE.WAITING; 
+                default:
+                    break;
+            }
+        } else if (view.getId() == R.id.lock) {
+            switch (appState){
+                case WAITING:
+                    lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,0, 0,
+                                        locationListener);
+                    status.setText("GETTING LOCK");
+                    break;
+                default:
+                    status.setText("?");
+                    break;
+            }
+            
+        }
     }
     
     private void start_timer()
     {
-    	start_time = SystemClock.uptimeMillis();
         mHandler.removeCallbacks(mTimer);
         mHandler.postDelayed(mTimer, 0);
     }
     
     private void stop_timer()
     {
-    	mHandler.removeCallbacks(mTimer);
+        mHandler.removeCallbacks(mTimer);
     }
     
     private void write_data()
     {
-    	String sd_state = Environment.getExternalStorageState();
-    	if (Environment.MEDIA_MOUNTED.equals(sd_state)) {
-    	    // We can read and write the media
-    		Long t_now = System.currentTimeMillis() + drift;
-    		String txt = t_now.toString();
-    		txt += "," + loc.getLatitude();
-    		txt += "," + loc.getLongitude();
-    		txt += "," + loc.getAltitude();
-    		txt += "," + loc.getBearing();
-    		txt += "," + loc.getSpeed();
-    		txt += "," + loc.getAccuracy();
-    		txt += "," + sense.values[0]; // x-val
-    		txt += "," + sense.values[1]; // y-val
-    		txt += "," + sense.values[2]; // z-val
-    		txt += "," + sense.accuracy;
-    		txt += "\n";
-    		try {
-				csv.write(txt);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    	}
+        String sd_state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(sd_state)) {
+            // We can read and write the media
+            Long t_now = System.currentTimeMillis() + drift;
+            String txt = t_now.toString();
+            txt += "," + loc.getLatitude();
+            txt += "," + loc.getLongitude();
+            txt += "," + loc.getAltitude();
+            txt += "," + loc.getBearing();
+            txt += "," + loc.getSpeed();
+            txt += "," + loc.getAccuracy();
+            txt += "," + sense.values[0]; // x-val
+            txt += "," + sense.values[1]; // y-val
+            txt += "," + sense.values[2]; // z-val
+            txt += "," + sense.accuracy;
+            txt += "\n";
+            try {
+                csv.write(txt);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
     
     private Runnable mTimer = new Runnable() {
-	   public void run() {
-		   Long now = SystemClock.uptimeMillis(); // needed for timer
-		   write_data();
-		   mHandler.postAtTime(this, now+1000);
-	   }    
+    public void run() {
+        Long now = SystemClock.uptimeMillis(); // needed for timer
+        write_data();
+        mHandler.postAtTime(this, now+1000);
+    }    
     };
 }
