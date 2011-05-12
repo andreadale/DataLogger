@@ -198,7 +198,7 @@ public class datalogger extends Activity {
         public void run() {
             Long now = SystemClock.uptimeMillis(); // needed for timer
             write_data();
-            mHandler.postAtTime(this, now+1000);
+            mHandler.postAtTime(this, now+500);
         }    
     };
 }
