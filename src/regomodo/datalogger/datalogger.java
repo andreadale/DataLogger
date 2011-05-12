@@ -3,6 +3,9 @@ package regomodo.datalogger;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -33,12 +36,14 @@ public class datalogger extends Activity {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private SensorEvent sense;
+    private float[] gravity;
     
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        gravity = new float[3];
         status = (TextView) findViewById(R.id.statusView);        
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -57,8 +62,7 @@ public class datalogger extends Activity {
     private void request_updates() {
         if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             appState = STATE.WAITING;
-            status.setText("READY");
-            
+            status.setText("READY");            
         } else {
             appState = STATE.ERROR;
             status.setText("NO GPS");
@@ -85,7 +89,11 @@ public class datalogger extends Activity {
         
         @Override
         public void onSensorChanged(SensorEvent event) {
-            sense = event;			
+            sense = event;
+            final float alpha = (float) 0.8;
+            gravity[0] = alpha  * gravity[0] + (1 - alpha) * event.values[0];
+            gravity[1] = alpha  * gravity[1] + (1 - alpha) * event.values[1];
+            gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2];
         }    	
     };
     
@@ -165,15 +173,15 @@ public class datalogger extends Activity {
             txt += "," + loc.getBearing();
             txt += "," + loc.getSpeed();
             txt += "," + loc.getAccuracy();
-            txt += "," + sense.values[0]; // x-val
-            txt += "," + sense.values[1]; // y-val
-            txt += "," + sense.values[2]; // z-val
+            txt += "," + (sense.values[0] - gravity[0]); // x-val
+            txt += "," + (sense.values[1] - gravity[1]); // y-val
+            txt += "," + (sense.values[2] - gravity[2]); // z-val
             txt += "," + sense.accuracy;
             txt += "\n";
             try {
                 csv.write(txt);
+                status.setText(txt);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 status.setText(e.getLocalizedMessage());
             }
         }
