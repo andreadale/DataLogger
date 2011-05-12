@@ -110,7 +110,14 @@ public class datalogger extends Activity {
                     //Start recording	    			
                     mSensorManager.registerListener(sensorListener, mAccelerometer,
                                         SensorManager.SENSOR_DELAY_GAME);
-                    File fname = new File(getExternalFilesDir(null),"test.csv");
+                    Date date_now = new Date();
+                    String d_text = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, 
+                            DateFormat.LONG,Locale.UK).format(date_now);                    
+                    d_text = d_text.replace(':', '-');
+                    d_text = d_text.replace(',', ' ');
+                    d_text += ".csv";
+                    
+                    File fname = new File(getExternalFilesDir(null),d_text);
                     try {
                         csv = new FileWriter(fname);
                     } catch(Exception e) {
