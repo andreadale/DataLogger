@@ -2,6 +2,8 @@
 import sys
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import numpy
+from pylab import *
 
 ALPHA = 0.8
 gravity = [0,0,0]
@@ -47,9 +49,9 @@ def __remove_gravity():
 
 def plot_accelerometer():
     a_vals = __remove_gravity()
-    plt.plot(x,a_vals[0],'r',label="x-axis")
-    plt.plot(x,a_vals[1],'g', label="y-axis")
-    plt.plot(x,a_vals[2],'b', label="z-axis")
+    plt.plot(x,smooth(a_vals[0],3),'r',label="x-axis")
+    plt.plot(x,smooth(a_vals[1],3),'g', label="y-axis")
+    plt.plot(x,smooth(a_vals[2],3),'b', label="z-axis")
     
     plt.legend()
     plt.title("Acceleration")
@@ -70,6 +72,12 @@ def plot_speed(unit="mph"):
         conv = 1000
     
     y = [ (val*3600)/conv for val in values["velocity"] ]
+    
+    plt.subplot(211)
+    plt.plot(x,smooth(y,50))
+    plt.grid(True)
+    plt.title("Velocity (filtered)")
+    plt.subplot(212)
     plt.plot(x,y)
     plt.grid(True)
     plt.title("Velocity")
@@ -80,10 +88,15 @@ def plot_route():
     plt.plot(values["longitude"], values["latitude"])
     
 def plot_altitude():
-    plt.plot(x, values["altitude"],label="Altitude")
+    plt.plot(x, smooth(values["altitude"]),label="Altitude")
     
 def plot_bearing():
     plt.plot(x, values["bearing"], label="Bearing")
+    
+
+def smooth(z,window_len=15,mode="hanning"):
+    w = eval("numpy."+mode+"(window_len)")
+    return numpy.convolve(w/w.sum(),z,mode='same')
     
 
 if sys.argv[2] == "a":
