@@ -4,9 +4,33 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
+<LinearLayout
+	android:orientation="horizontal"
+	android:layout_width="fill_parent"
+	android:layout_height="30px">
+<TextView
+	android:layout_width="wrap_content"
+	android:text="STATUS: " 
+	android:layout_gravity="center" android:layout_height="wrap_content" android:textSize="20px"/>
 <TextView  
     android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" android:text="@string/status" android:id="@+id/statusView"/>
-<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Run" android:id="@+id/button" android:onClick="@string/buttonHandler"></Button>
-<Button android:text="Get Lock" android:id="@+id/lock" android:layout_width="wrap_content" android:layout_height="wrap_content" android:onClick="@string/buttonHandler"></Button>
+    android:layout_height="wrap_content" 
+    android:text="@string/status" 
+    android:id="@+id/statusView" android:layout_gravity="center" android:textSize="20px"/>
+    </LinearLayout>
+<LinearLayout 
+	android:layout_width="match_parent" 
+	android:id="@+id/linearLayout1" 
+	android:layout_height="wrap_content"
+	android:minHeight="20px"></LinearLayout>
+ <Button 
+	android:text="Get Lock" 
+	android:id="@+id/lock" 
+	android:layout_height="wrap_content" 
+	android:onClick="@string/buttonHandler" android:layout_width="fill_parent"/>
+<Button 
+	android:text="Run" 
+	android:id="@+id/button" 
+	android:onClick="@string/buttonHandler" android:layout_width="fill_parent" android:layout_height="wrap_content"/>
+
 </LinearLayout>

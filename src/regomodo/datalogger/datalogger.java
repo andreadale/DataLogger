@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.widget.Button;
 import android.widget.TextView;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -21,6 +22,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.view.View;
+import android.widget.Toast;
 
 
 
@@ -36,13 +38,16 @@ public class datalogger extends Activity {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private SensorEvent sense;
+    private Button lockBut,runBut;
     
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        status = (TextView) findViewById(R.id.statusView);        
+        status = (TextView) findViewById(R.id.statusView);
+        lockBut = (Button) findViewById(R.id.lock);
+        runBut = (Button) findViewById(R.id.button);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -60,10 +65,20 @@ public class datalogger extends Activity {
     private void request_updates() {
         if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             appState = STATE.WAITING;
-            status.setText("READY");            
+            status.setText("READY");
+            status.setTextColor(0xFFFF8800); // orange      
+            lockBut.setEnabled(true);
+            runBut.setText("Run");
+            runBut.setEnabled(false);
         } else {
             appState = STATE.ERROR;
             status.setText("NO GPS");
+            status.setTextColor(0xFFFF0000);
+            runBut.setText("Restart");
+            lockBut.setEnabled(false);
+            Toast.makeText(this, 
+                    "GPS is disabled in your device. Try turning it on.", 
+                    Toast.LENGTH_LONG).show();  
         }       
     }
     
@@ -74,6 +89,8 @@ public class datalogger extends Activity {
             if (appState == STATE.WAITING){
                 appState = STATE.LOCKED;
                 status.setText("LOCKED");
+                status.setTextColor(0xFF00FF00); // green
+                runBut.setEnabled(true);
             }    	
         }
         public void onProviderDisabled(String arg0) {}
@@ -87,6 +104,7 @@ public class datalogger extends Activity {
         
         @Override
         public void onSensorChanged(SensorEvent event) {
+            // TODO: maybe use arrays for vals and average them when logging 
             sense = event;
         }    	
     };
@@ -100,6 +118,9 @@ public class datalogger extends Activity {
                     break;
                 case WAITING:
                     status.setText("NO LOCK");
+                    status.setTextColor(0xFFFF0000); // red
+                    lockBut.setEnabled(true);
+                    runBut.setEnabled(false);
                 case LOCKED:
                     //Start recording	    			
                     mSensorManager.registerListener(sensorListener, mAccelerometer,
@@ -121,6 +142,8 @@ public class datalogger extends Activity {
                     start_timer();
                     appState = STATE.RUNNING;
                     status.setText("RUNNING");
+                    status.setTextColor(0xFF0000FF); // blue
+                    runBut.setText("STOP");
                     break;
                 case RUNNING:    			
                     stop_timer();
@@ -131,7 +154,9 @@ public class datalogger extends Activity {
                     }
                     mSensorManager.unregisterListener(sensorListener);
                     status.setText("WAITING");
+                    status.setTextColor(0xFF00FF00); //green
                     appState = STATE.WAITING;
+                    runBut.setText("Run");
                     break;
                 default:
                     break;
@@ -142,9 +167,13 @@ public class datalogger extends Activity {
                     lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,0, 0,
                                         locationListener);
                     status.setText("GETTING LOCK");
+                    status.setTextColor(0xFFFFFF00); //yellow
+                    lockBut.setEnabled(false);
+                    runBut.setEnabled(false);
                     break;
                 default:
                     status.setText("?");
+                    runBut.setEnabled(true);
                     break;
             }            
         }
@@ -181,7 +210,7 @@ public class datalogger extends Activity {
             txt += "\n";
             try {
                 csv.write(txt);
-                status.setText(txt);
+//                status.setText(txt);
             } catch (IOException e) {
                 status.setText(e.getLocalizedMessage());
             }
