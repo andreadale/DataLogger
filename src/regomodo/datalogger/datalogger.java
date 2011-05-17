@@ -144,6 +144,9 @@ public class datalogger extends Activity {
                     status.setText("RUNNING");
                     status.setTextColor(0xFF0000FF); // blue
                     runBut.setText("STOP");
+                    Toast.makeText(this, 
+                            "Data saved to: "+d_text, 
+                            Toast.LENGTH_LONG).show(); 
                     break;
                 case RUNNING:    			
                     stop_timer();
