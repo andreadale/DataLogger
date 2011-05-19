@@ -38,7 +38,7 @@ public class datalogger extends Activity {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private SensorEvent sense;
-    private Button lockBut,runBut;
+    private Button runBut;
     
     /** Called when the activity is first created. */
     @Override
@@ -46,7 +46,6 @@ public class datalogger extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         status = (TextView) findViewById(R.id.statusView);
-        lockBut = (Button) findViewById(R.id.lock);
         runBut = (Button) findViewById(R.id.button);
         lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -56,7 +55,7 @@ public class datalogger extends Activity {
     }
     
     public enum STATE{
-        ERROR, LOCKED, RUNNING, WAITING
+        ERROR, LOCKED, RUNNING, WAITING,NOLOCK
     }
     
     /*
@@ -66,16 +65,13 @@ public class datalogger extends Activity {
         if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             appState = STATE.WAITING;
             status.setText("READY");
-            status.setTextColor(0xFFFF8800); // orange      
-            lockBut.setEnabled(true);
-            runBut.setText("Run");
-            runBut.setEnabled(false);
+            status.setTextColor(0xFFFF8800); // orange
+            runBut.setText("GET LOCK");
         } else {
             appState = STATE.ERROR;
             status.setText("NO GPS");
             status.setTextColor(0xFFFF0000);
-            runBut.setText("Restart");
-            lockBut.setEnabled(false);
+            runBut.setText("RESTART");
             Toast.makeText(this, 
                     "GPS is disabled in your device. Try turning it on.", 
                     Toast.LENGTH_LONG).show();  
@@ -90,6 +86,7 @@ public class datalogger extends Activity {
                 appState = STATE.LOCKED;
                 status.setText("LOCKED");
                 status.setTextColor(0xFF00FF00); // green
+                runBut.setText("RUN");
                 runBut.setEnabled(true);
             }    	
         }
@@ -117,10 +114,13 @@ public class datalogger extends Activity {
                     request_updates();
                     break;
                 case WAITING:
-                    status.setText("NO LOCK");
-                    status.setTextColor(0xFFFF0000); // red
-                    lockBut.setEnabled(true);
+                    lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,0, 0,
+                            locationListener);
+                    status.setText("GETTING LOCK");
+                    status.setTextColor(0xFFFFFF00); //yellow
                     runBut.setEnabled(false);
+                    break;
+                    
                 case LOCKED:
                     //Start recording	    			
                     mSensorManager.registerListener(sensorListener, mAccelerometer,
@@ -159,27 +159,12 @@ public class datalogger extends Activity {
                     status.setText("WAITING");
                     status.setTextColor(0xFF00FF00); //green
                     appState = STATE.WAITING;
-                    runBut.setText("Run");
+                    runBut.setText("RUN");
                     break;
                 default:
                     break;
             }
-        } else if (view.getId() == R.id.lock) {
-            switch (appState){
-                case WAITING:
-                    lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,0, 0,
-                                        locationListener);
-                    status.setText("GETTING LOCK");
-                    status.setTextColor(0xFFFFFF00); //yellow
-                    lockBut.setEnabled(false);
-                    runBut.setEnabled(false);
-                    break;
-                default:
-                    status.setText("?");
-                    runBut.setEnabled(true);
-                    break;
-            }            
-        }
+        } 
     }
     
     private void start_timer()
